@@ -4,3 +4,6 @@ __pycache__/
 *.pyc
 .DS_Store
 config/simple_auth_manager_passwords.json
+docs/
+dags/__pycache__/
+scripts/__pycache__/
