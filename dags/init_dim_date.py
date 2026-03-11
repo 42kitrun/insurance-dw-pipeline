@@ -24,7 +24,7 @@ def init_dim_date():
         records = []
         current = start
         while current <= end:
-            date_key = int(current.strftime("%Y%m%d"))
+            date_key = current.strftime("%Y%m%d")
             year = current.year
             month = current.month
             day = current.day

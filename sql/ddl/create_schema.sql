@@ -2,13 +2,18 @@
 -- Insurance DW Schema DDL
 -- ============================================
 
--- Dimension: 기준년월
+-- Dimension: 기준일자
 CREATE TABLE IF NOT EXISTS dim_date (
-    date_key        CHAR(6) PRIMARY KEY,  -- YYYYMM
+    date_key        CHAR(8) PRIMARY KEY,  -- YYYYMMDD
+    full_date       DATE NOT NULL,
     year            INT NOT NULL,
     month           INT NOT NULL,
+    day             INT NOT NULL,
     quarter         INT NOT NULL,
-    year_month_desc VARCHAR(20)
+    week_of_year    INT NOT NULL,
+    day_of_week     INT NOT NULL,        -- 1=Monday, 7=Sunday
+    is_weekend      BOOLEAN NOT NULL,
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Dimension: 보험회사
@@ -32,7 +37,7 @@ CREATE TABLE IF NOT EXISTS dim_insurance_type (
 -- ============================================
 CREATE TABLE IF NOT EXISTS fact_auto_contract (
     id              SERIAL PRIMARY KEY,
-    date_key        CHAR(6) REFERENCES dim_date(date_key),
+    date_key        CHAR(8) REFERENCES dim_date(date_key),
     ins_type        VARCHAR(50),   -- 보험종목명 (개인용/영업용/업무용)
     coverage        VARCHAR(50),   -- 담보구분명
     sex             VARCHAR(10),   -- 성별
@@ -49,7 +54,7 @@ CREATE TABLE IF NOT EXISTS fact_auto_contract (
 -- ============================================
 CREATE TABLE IF NOT EXISTS fact_auto_loss (
     id              SERIAL PRIMARY KEY,
-    date_key        CHAR(6) REFERENCES dim_date(date_key),
+    date_key        CHAR(8) REFERENCES dim_date(date_key),
     ins_type        VARCHAR(50),   -- 보험종목명
     coverage        VARCHAR(50),   -- 담보구분명
     car_type        VARCHAR(20),   -- 차종
@@ -64,7 +69,7 @@ CREATE TABLE IF NOT EXISTS fact_auto_loss (
 -- ============================================
 CREATE TABLE IF NOT EXISTS fact_auto_victim (
     id              SERIAL PRIMARY KEY,
-    date_key        CHAR(6) REFERENCES dim_date(date_key),
+    date_key        CHAR(8) REFERENCES dim_date(date_key),
     death_injury_type VARCHAR(10), -- 사망/부상 구분
     is_disabled     VARCHAR(1),    -- 장애여부
     injury_level    VARCHAR(10),   -- 부상급수
@@ -78,7 +83,7 @@ CREATE TABLE IF NOT EXISTS fact_auto_victim (
 -- ============================================
 CREATE TABLE IF NOT EXISTS fact_life_general (
     id              SERIAL PRIMARY KEY,
-    date_key        CHAR(6) REFERENCES dim_date(date_key),
+    date_key        CHAR(8) REFERENCES dim_date(date_key),
     company_name    VARCHAR(100),
     title           VARCHAR(200),
     employee_type   VARCHAR(50),   -- 임직원 구분코드명
@@ -92,7 +97,7 @@ CREATE TABLE IF NOT EXISTS fact_life_general (
 -- ============================================
 CREATE TABLE IF NOT EXISTS fact_life_finance (
     id              SERIAL PRIMARY KEY,
-    date_key        CHAR(6) REFERENCES dim_date(date_key),
+    date_key        CHAR(8) REFERENCES dim_date(date_key),
     company_name    VARCHAR(100),
     account_code    VARCHAR(50),   -- 계정과목코드
     account_name    VARCHAR(200),  -- 계정과목코드명
@@ -106,7 +111,7 @@ CREATE TABLE IF NOT EXISTS fact_life_finance (
 -- ============================================
 CREATE TABLE IF NOT EXISTS fact_life_business (
     id              SERIAL PRIMARY KEY,
-    date_key        CHAR(6) REFERENCES dim_date(date_key),
+    date_key        CHAR(8) REFERENCES dim_date(date_key),
     company_name    VARCHAR(100),
     contract_type_code VARCHAR(50),   -- 신계약구분코드
     contract_type_name VARCHAR(200),  -- 신계약구분코드명
@@ -120,7 +125,7 @@ CREATE TABLE IF NOT EXISTS fact_life_business (
 -- ============================================
 CREATE TABLE IF NOT EXISTS fact_life_kpi (
     id              SERIAL PRIMARY KEY,
-    date_key        CHAR(6) REFERENCES dim_date(date_key),
+    date_key        CHAR(8) REFERENCES dim_date(date_key),
     company_name    VARCHAR(100),
     kpi_code        VARCHAR(50),   -- 자본적정성항목코드
     kpi_name        VARCHAR(200),  -- 자본적정성항목코드명
@@ -133,7 +138,7 @@ CREATE TABLE IF NOT EXISTS fact_life_kpi (
 -- ============================================
 CREATE TABLE IF NOT EXISTS fact_nonlife_general (
     id              SERIAL PRIMARY KEY,
-    date_key        CHAR(6) REFERENCES dim_date(date_key),
+    date_key        CHAR(8) REFERENCES dim_date(date_key),
     company_name    VARCHAR(100),
     title           VARCHAR(200),
     employee_type   VARCHAR(50),
@@ -147,7 +152,7 @@ CREATE TABLE IF NOT EXISTS fact_nonlife_general (
 -- ============================================
 CREATE TABLE IF NOT EXISTS fact_nonlife_finance (
     id              SERIAL PRIMARY KEY,
-    date_key        CHAR(6) REFERENCES dim_date(date_key),
+    date_key        CHAR(8) REFERENCES dim_date(date_key),
     company_name    VARCHAR(100),
     account_code    VARCHAR(50),
     account_name    VARCHAR(200),
@@ -161,7 +166,7 @@ CREATE TABLE IF NOT EXISTS fact_nonlife_finance (
 -- ============================================
 CREATE TABLE IF NOT EXISTS fact_nonlife_business (
     id              SERIAL PRIMARY KEY,
-    date_key        CHAR(6) REFERENCES dim_date(date_key),
+    date_key        CHAR(8) REFERENCES dim_date(date_key),
     company_name    VARCHAR(100),
     ins_type_code   VARCHAR(50),   -- 보험종류경과손해율구분코드
     ins_type_name   VARCHAR(200),  -- 보험종류경과손해율구분코드명
@@ -174,7 +179,7 @@ CREATE TABLE IF NOT EXISTS fact_nonlife_business (
 -- ============================================
 CREATE TABLE IF NOT EXISTS fact_nonlife_kpi (
     id              SERIAL PRIMARY KEY,
-    date_key        CHAR(6) REFERENCES dim_date(date_key),
+    date_key        CHAR(8) REFERENCES dim_date(date_key),
     company_name    VARCHAR(100),
     kpi_code        VARCHAR(50),
     kpi_name        VARCHAR(200),
@@ -187,7 +192,7 @@ CREATE TABLE IF NOT EXISTS fact_nonlife_kpi (
 -- ============================================
 CREATE TABLE IF NOT EXISTS mart_monthly_summary (
     id                  SERIAL PRIMARY KEY,
-    date_key            CHAR(6) REFERENCES dim_date(date_key),
+    date_key            CHAR(8) REFERENCES dim_date(date_key),
     company_name        VARCHAR(100),
     company_type        VARCHAR(20),   -- 생명/손해
     total_employee_cnt  BIGINT,        -- 임직원수 합계
