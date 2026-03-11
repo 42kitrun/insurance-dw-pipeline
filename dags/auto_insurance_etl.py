@@ -23,7 +23,10 @@ def auto_insurance_etl():
     def load_contract_info() -> int:
         return load_dataset(
             ApiDatasetSpec(
-                endpoint=required_endpoint("AUTO_CONTRACT_API_ENDPOINT"),
+                endpoint=required_endpoint(
+                    "AUTO_CONTRACT_API_ENDPOINT",
+                    "http://apis.data.go.kr/1160100/service/GetFPAtmbInsujoinInfoService/getContractInfo",
+                ),
                 title=None,
                 table_name="fact_auto_contract",
                 columns=(
@@ -38,6 +41,7 @@ def auto_insurance_etl():
                     "elapsed_premium",
                 ),
                 mapper=map_auto_contract,
+                extra_params={"likeIsuCmpyOfrYm": "{bas_ym}"},
             )
         )
 
@@ -45,7 +49,10 @@ def auto_insurance_etl():
     def load_loss_status() -> int:
         return load_dataset(
             ApiDatasetSpec(
-                endpoint=required_endpoint("AUTO_LOSS_API_ENDPOINT"),
+                endpoint=required_endpoint(
+                    "AUTO_LOSS_API_ENDPOINT",
+                    "http://apis.data.go.kr/1160100/service/GetFPAtmbInsujoinInfoService/getLosCircumstance",
+                ),
                 title=None,
                 table_name="fact_auto_loss",
                 columns=(
@@ -58,6 +65,7 @@ def auto_insurance_etl():
                     "death_cnt",
                 ),
                 mapper=map_auto_loss,
+                extra_params={"likeIsuCmpyOfrYm": "{bas_ym}"},
             )
         )
 
@@ -65,7 +73,10 @@ def auto_insurance_etl():
     def load_victim_info() -> int:
         return load_dataset(
             ApiDatasetSpec(
-                endpoint=required_endpoint("AUTO_VICTIM_API_ENDPOINT"),
+                endpoint=required_endpoint(
+                    "AUTO_VICTIM_API_ENDPOINT",
+                    "http://apis.data.go.kr/1160100/service/GetFPAtmbInsujoinInfoService/getVictimInfo",
+                ),
                 title=None,
                 table_name="fact_auto_victim",
                 columns=(
@@ -77,6 +88,7 @@ def auto_insurance_etl():
                     "person_cnt",
                 ),
                 mapper=map_auto_victim,
+                extra_params={"likeAtmbAcdnCnlsYm": "{bas_ym}"},
             )
         )
 

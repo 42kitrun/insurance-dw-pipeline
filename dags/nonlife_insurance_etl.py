@@ -54,8 +54,11 @@ def nonlife_insurance_etl():
     def load_business_activity() -> int:
         return load_dataset(
             ApiDatasetSpec(
-                endpoint=required_endpoint("NONLIFE_BUSINESS_API_ENDPOINT"),
-                title=None,
+                endpoint=required_endpoint(
+                    "NONLIFE_BUSINESS_API_ENDPOINT",
+                    "http://apis.data.go.kr/1160100/service/GetNonlInsuCompInfoService/getNonlInsuCompMajoBusiActi",
+                ),
+                title="손보_주요영업활동_보험종류별 경과손해율",
                 table_name="fact_nonlife_business",
                 columns=("date_key", "company_name", "ins_type_code", "ins_type_name", "amount"),
                 mapper=map_nonlife_business,
@@ -66,8 +69,11 @@ def nonlife_insurance_etl():
     def load_management_kpi() -> int:
         return load_dataset(
             ApiDatasetSpec(
-                endpoint=required_endpoint("NONLIFE_KPI_API_ENDPOINT"),
-                title=None,
+                endpoint=required_endpoint(
+                    "NONLIFE_KPI_API_ENDPOINT",
+                    "http://apis.data.go.kr/1160100/service/GetNonlInsuCompInfoService/getNonlInsuCompKeyManaIndi",
+                ),
+                title="손보_주요경영지표_자본적정성",
                 table_name="fact_nonlife_kpi",
                 columns=("date_key", "company_name", "kpi_code", "kpi_name", "kpi_value"),
                 mapper=map_nonlife_kpi,

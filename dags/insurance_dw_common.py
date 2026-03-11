@@ -31,6 +31,7 @@ class ApiDatasetSpec:
     table_name: str
     columns: tuple[str, ...]
     mapper: Callable[[dict, str], tuple]
+    extra_params: dict[str, str] | None = None
 
 
 QUALITY_RULES = (
@@ -123,19 +124,30 @@ def required_endpoint(env_name: str, default: str | None = None) -> str:
     return endpoint
 
 
-def fetch_table_items(endpoint: str, bas_ym: str, title: str | None = None) -> list[dict]:
+def fetch_table_items(
+    endpoint: str,
+    bas_ym: str,
+    title: str | None = None,
+    extra_params: dict[str, str] | None = None,
+) -> list[dict]:
     page_no = 1
     items: list[dict] = []
     while True:
-        query = urlencode(
-            {
-                "serviceKey": get_api_key(),
-                "pageNo": page_no,
-                "numOfRows": DEFAULT_PAGE_SIZE,
-                "resultType": "json",
-                "basYm": bas_ym,
-            }
-        )
+        params = {
+            "serviceKey": get_api_key(),
+            "pageNo": page_no,
+            "numOfRows": DEFAULT_PAGE_SIZE,
+            "resultType": "json",
+        }
+        if extra_params:
+            params.update({key: value.format(bas_ym=bas_ym) for key, value in extra_params.items()})
+        elif title is not None:
+            params["title"] = title
+            params["basYm"] = bas_ym
+        else:
+            params["basYm"] = bas_ym
+
+        query = urlencode(params)
         request_url = f"{endpoint}?{query}"
         with urlopen(request_url, timeout=DEFAULT_API_TIMEOUT) as response:
             payload = json.loads(response.read().decode("utf-8"))
@@ -182,7 +194,12 @@ def replace_table_rows(table_name: str, columns: tuple[str, ...], rows: list[tup
 
 def load_dataset(spec: ApiDatasetSpec, bas_ym: str | None = None) -> int:
     resolved_bas_ym = resolve_bas_ym(bas_ym)
-    items = fetch_table_items(spec.endpoint, resolved_bas_ym, title=spec.title)
+    items = fetch_table_items(
+        spec.endpoint,
+        resolved_bas_ym,
+        title=spec.title,
+        extra_params=spec.extra_params,
+    )
     rows = [spec.mapper(item, resolved_bas_ym) for item in items]
     return replace_table_rows(spec.table_name, spec.columns, rows)
 
@@ -286,10 +303,10 @@ def map_life_business(item: dict, bas_ym: str) -> tuple:
     return (
         bas_ym_to_date_key(bas_ym),
         item.get("fncoNm"),
-        item.get("newCtrDcd"),
-        item.get("newCtrDcdNm"),
-        as_int(item.get("thqtrAmt")),
-        as_int(item.get("thqtrCnt")),
+        item.get("spacsbDcd"),
+        item.get("spacsbDcdNm"),
+        as_int(item.get("spacsbClsfThqrAmt")),
+        as_int(item.get("spacsbClsfThqrCcnt")),
     )
 
 
@@ -297,9 +314,9 @@ def map_life_kpi(item: dict, bas_ym: str) -> tuple:
     return (
         bas_ym_to_date_key(bas_ym),
         item.get("fncoNm"),
-        item.get("cptAdeqItemCd"),
-        item.get("cptAdeqItemCdNm"),
-        as_int(item.get("cptAdeqItemAmt")),
+        item.get("cpaqItemCd"),
+        item.get("cpaqItemCdNm"),
+        as_int(item.get("cpaqItemAmt")),
     )
 
 
@@ -307,9 +324,9 @@ def map_nonlife_business(item: dict, bas_ym: str) -> tuple:
     return (
         bas_ym_to_date_key(bas_ym),
         item.get("fncoNm"),
-        item.get("insTypeLossRtDcd"),
-        item.get("insTypeLossRtDcdNm"),
-        as_int(item.get("amt")),
+        item.get("isuKindElpsLosRatDcd"),
+        item.get("isuKindElpsLosRatDcdNm"),
+        as_int(item.get("isuKindElpsLosRatClsfAmt")),
     )
 
 
@@ -317,7 +334,7 @@ def map_nonlife_kpi(item: dict, bas_ym: str) -> tuple:
     return (
         bas_ym_to_date_key(bas_ym),
         item.get("fncoNm"),
-        item.get("kpiCd"),
-        item.get("kpiCdNm"),
-        str(item.get("kpiVal") or ""),
+        item.get("cpaqItemCd"),
+        item.get("cpaqItemCdNm"),
+        str(item.get("cpaqItemValCtt") or ""),
     )

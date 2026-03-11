@@ -54,8 +54,11 @@ def life_insurance_etl():
     def load_business_activity() -> int:
         return load_dataset(
             ApiDatasetSpec(
-                endpoint=required_endpoint("LIFE_BUSINESS_API_ENDPOINT"),
-                title=None,
+                endpoint=required_endpoint(
+                    "LIFE_BUSINESS_API_ENDPOINT",
+                    "http://apis.data.go.kr/1160100/service/GetLifeInsuCompInfoService/getLifeInsuCompMajoBusiActi",
+                ),
+                title="생보_주요영업활동_신계약",
                 table_name="fact_life_business",
                 columns=(
                     "date_key",
@@ -73,8 +76,11 @@ def life_insurance_etl():
     def load_management_kpi() -> int:
         return load_dataset(
             ApiDatasetSpec(
-                endpoint=required_endpoint("LIFE_KPI_API_ENDPOINT"),
-                title=None,
+                endpoint=required_endpoint(
+                    "LIFE_KPI_API_ENDPOINT",
+                    "http://apis.data.go.kr/1160100/service/GetLifeInsuCompInfoService/getLifeInsuCompKeyManaIndi",
+                ),
+                title="생보_주요경영지표_자본적정성",
                 table_name="fact_life_kpi",
                 columns=("date_key", "company_name", "kpi_code", "kpi_name", "kpi_amount"),
                 mapper=map_life_kpi,
