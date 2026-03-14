@@ -10,7 +10,7 @@ from pathlib import Path
 # RDS 연결 정보
 RDS_HOST = "3.38.85.243"
 RDS_PORT = 5432
-RDS_DBNAME = "postgres"
+RDS_DBNAME = "insurance_dw"
 RDS_USER = "postgres"
 RDS_PASSWORD = "insurance00"
 
